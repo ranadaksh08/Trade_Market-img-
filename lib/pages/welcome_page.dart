@@ -20,7 +20,7 @@ class WelcomePage extends StatelessWidget {
             ),
 
             //button to store
-            MyButton(onTap: () =>Navigator.pushNamed(context, '/marketplace_page'), 
+            MyButton(onTap: () =>Navigator.pushNamed(context, '/login_page'), 
             child: Icon(Icons.arrow_forward))
           ],
         ),

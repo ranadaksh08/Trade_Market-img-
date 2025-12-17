@@ -1,6 +1,7 @@
 import 'package:agoraofolymus/models/shop.dart';
 import 'package:agoraofolymus/pages/addItem_page.dart';
 import 'package:agoraofolymus/pages/cart_page.dart';
+import 'package:agoraofolymus/pages/login_page.dart';
 import 'package:agoraofolymus/pages/marketplace_page.dart';
 import 'package:agoraofolymus/pages/profile_page.dart';
 import 'package:agoraofolymus/pages/welcome_page.dart';
@@ -31,6 +32,7 @@ class MyApp extends StatelessWidget {
         '/marketplace_page' : (context) => MarketplacePage(),
         '/cart_page' : (context) => CartPage(),
         '/welcome_page' : (context) => WelcomePage(),
+        '/login_page' : (context) => LoginPage(),
 
       },
     );

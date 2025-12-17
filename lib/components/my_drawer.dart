@@ -80,7 +80,14 @@ class MyDrawer extends StatelessWidget {
           MyListTile(
             icon: Icons.logout_outlined, 
             text: "LogOut", 
-            onTap: (){}),
+            onTap: (){
+              //pop drawer
+              Navigator.pop(context);
+
+              //go to welcome page
+              Navigator.pushNamed(context, '/welcome_page');
+
+            }),
 
         ],
       ),
