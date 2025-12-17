@@ -12,34 +12,44 @@ class MyProductTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-        decoration: BoxDecoration(
-          color: Colors.grey[300],
-          borderRadius: BorderRadius.circular(12),
-        ),
-        margin: const EdgeInsets.all(10),
-        padding: const EdgeInsets.all(25),
-        child: Column(
-            children: [
-                //product image
-                Icon(Icons.favorite),
+      margin: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.grey[300],
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.favorite),
 
-                //product name
-                Text(product.name),
-                
-                //profuct description 
-                Text(product.description),
+          const SizedBox(height: 8),
 
-                //product category
-                Text(product.category),
+          Text(
+            product.name,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
 
-                //product rarity
-                Text(product.rarity),
+          const SizedBox(height: 4),
 
-                //product price 
-                Text(product.price.toString()),
-                
-            ],
-        ),
+          Text(product.shortDescription),
+
+          const SizedBox(height: 6),
+
+          Text("Category: ${product.category}"),
+          Text("Rarity: ${product.rarity}"),
+
+          const SizedBox(height: 6),
+
+          Text(
+            "\$${product.price}",
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
     );
   }
 }

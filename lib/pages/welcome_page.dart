@@ -1,4 +1,5 @@
 import 'package:agoraofolymus/components/my_button.dart';
+import 'package:agoraofolymus/pages/login_page.dart';
 import 'package:flutter/material.dart';
 
 class WelcomePage extends StatelessWidget {
@@ -11,17 +12,20 @@ class WelcomePage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            //Welcome to page
-            Text(
-              "Welcome page",
-              style: TextStyle(
-                fontSize: 30,
-              ),
+            const Text(
+              "Welcome to Agora of Olympus",
+              style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
             ),
-
-            //button to store
-            MyButton(onTap: () =>Navigator.pushNamed(context, '/login_page'), 
-            child: Icon(Icons.arrow_forward))
+            const SizedBox(height: 40),
+            MyButton(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LoginPage()),
+                );
+              },
+              child: const Icon(Icons.arrow_forward),
+            ),
           ],
         ),
       ),

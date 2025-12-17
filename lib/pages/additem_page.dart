@@ -1,10 +1,11 @@
+import 'package:agoraofolymus/components/my_button.dart';
+import 'package:agoraofolymus/components/my_textfield.dart';
 import 'package:agoraofolymus/models/product.dart';
 import 'package:agoraofolymus/models/shop.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-
-enum Rarity {common, rare, legendary, mythical}
+enum Rarity { common, rare, legendary, mythical }
 
 class AdditemPage extends StatefulWidget {
   const AdditemPage({super.key});
@@ -14,155 +15,172 @@ class AdditemPage extends StatefulWidget {
 }
 
 class _AdditemPageState extends State<AdditemPage> {
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController priceController = TextEditingController();
-  final TextEditingController descController = TextEditingController();
+  final nameController = TextEditingController();
+  final priceController = TextEditingController();
+  final shortDescController = TextEditingController();
+  final longDescController = TextEditingController();
+
   String selectedCategory = "Weapon";
   Rarity selectedRarity = Rarity.common;
 
   final List<String> categories = [
-      "Weapon",
-      "Armor",
-      "Potion",
-      "Artifact",
+    "Weapon",
+    "Armor",
+    "Potion",
+    "Artifact",
   ];
 
   @override
-  //Dispose details if leave page
-  void dispose(){
+  void dispose() {
     nameController.dispose();
-    descController.dispose();
     priceController.dispose();
+    shortDescController.dispose();
+    longDescController.dispose();
     super.dispose();
   }
 
-  //Fill all details
-  void _submitItem(){
-    if(nameController.text.isEmpty || 
-       descController.text.isEmpty ||
-       priceController.text.isEmpty){
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Please fill all fields"))
-        );
-       return;
+  void _submitItem() {
+    if (nameController.text.isEmpty ||
+        shortDescController.text.isEmpty ||
+        longDescController.text.isEmpty ||
+        priceController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please fill all fields")),
+      );
+      return;
+    }
+
+    final double? price = double.tryParse(priceController.text);
+    if (price == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Enter a valid price")),
+      );
+      return;
+    }
+
+    final product = Product(
+      name: nameController.text,
+      price: price,
+      shortDescription: shortDescController.text,
+      longDescription: longDescController.text,
+      imagePath: "",
+      rarity: selectedRarity.name,
+      category: selectedCategory,
+    );
+
+    context.read<Shop>().addProduct(product);
+    Navigator.pop(context);
   }
 
-  final product = Product(
-    name: nameController.text,
-    description: descController.text,
-    price: double.parse(priceController.text),
-    rarity: selectedRarity.name,
-    imagePath: "",
-    category: selectedCategory,
-   );
-
-   context.read<Shop>().addProduct(product);
-
-  Navigator.pop(context);
-  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[300],
-      appBar: AppBar(
-        title: Text("Add Item"),
-      ),
-
-    
-
-      body: Center(
-        
+      appBar: AppBar(title: const Text("Add Item")),
+      body: SingleChildScrollView(
         child: Column(
           children: [
+            const SizedBox(height: 30),
 
-          const SizedBox(height: 50),
-
-          //item name textfield 
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 25),
-            child: TextField(
+            MyTextfield(
               controller: nameController,
-              decoration: InputDecoration(
-              enabledBorder: const OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.white),
-              ),
-            hintText: "Item Name",
-            hintStyle: TextStyle(
-              color: Colors.grey[500],
-            )
-        ),
-      ),
-    ),
+              hintText: "Item Name",
+              obscureText: false,
+            ),
 
-          const SizedBox(height: 50),
-          //image textfield 
-          /*Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 25),
-            child: TextField(
-              decoration: InputDecoration(
-              enabledBorder: const OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.white),
-              ),
-            hintText: "Select Image",
-            hintStyle: TextStyle(
-              color: Colors.grey[500],
-            )
-        ),
-      ),
-    ),*/
+            const SizedBox(height: 20),
 
-          const SizedBox(height: 50),
-          
-          //short description text field 
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 25),
-            child: TextField(
-              controller: descController,
-              decoration: InputDecoration(
-              enabledBorder: const OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.white),
-              ),
-            hintText: "Short description about your item...",
-            hintStyle: TextStyle(
-              color: Colors.grey[500],
-            )
-        ),
-      ),
-    ),
-          const SizedBox(height: 50),
-        
-          //price 
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 25),
-            child: TextField(
+            MyTextfield(
+              controller: shortDescController,
+              hintText: "Short description",
+              obscureText: false,
+            ),
+
+            const SizedBox(height: 20),
+
+            MyTextfield(
+              controller: longDescController,
+              hintText: "Detailed description",
+              obscureText: false,
+            ),
+
+            const SizedBox(height: 20),
+
+            MyTextfield(
               controller: priceController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-              enabledBorder: const OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.white),
+              hintText: "Price",
+              obscureText: false,
+            ),
+
+            const SizedBox(height: 20),
+
+            // Category
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 25),
+              child: DropdownButtonFormField<String>(
+                value: selectedCategory,
+                decoration: const InputDecoration(
+                  filled: true,
+                  fillColor: Color(0xFFE0E0E0),
+                  border: OutlineInputBorder(),
+                  labelText: "Category",
+                ),
+                items: categories
+                    .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                    .toList(),
+                onChanged: (value) {
+                  setState(() => selectedCategory = value!);
+                },
               ),
-              hintText: "Add Price",
-              hintStyle: TextStyle(
-              color: Colors.grey[500],
-            )
-        ),
-      ),
-    ),
-          
+            ),
 
-          //rarity level option 
+            const SizedBox(height: 20),
 
-      
+            // Rarity
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 25),
+              child: DropdownButtonFormField<Rarity>(
+                value: selectedRarity,
+                decoration: const InputDecoration(
+                  filled: true,
+                  fillColor: Color(0xFFE0E0E0),
+                  border: OutlineInputBorder(),
+                  labelText: "Rarity",
+                ),
+                items: Rarity.values
+                    .map(
+                      (r) => DropdownMenuItem(
+                        value: r,
+                        child: Text(r.name.toUpperCase()),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (value) {
+                  setState(() => selectedRarity = value!);
+                },
+              ),
+            ),
+
+            const SizedBox(height: 30),
+
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 25),
+              child: MyButton(
+                onTap: _submitItem,
+                child: const Center(
+                  child: Text(
+                    "Add Item to Marketplace",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 40),
           ],
-        ),
-      ),
-
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.black,
-        onPressed: _submitItem,
-        child: Icon(
-          Icons.add,
-          color: Colors.white,
         ),
       ),
     );
