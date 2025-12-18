@@ -5,6 +5,7 @@ import 'package:agoraofolymus/pages/login_page.dart';
 import 'package:agoraofolymus/pages/marketplace_page.dart';
 import 'package:agoraofolymus/pages/profile_page.dart';
 import 'package:agoraofolymus/pages/welcome_page.dart';
+import 'package:agoraofolymus/pages/your_listed_item_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -43,6 +44,7 @@ class MyApp extends StatelessWidget {
         '/profile_page': (context) => const ProfilePage(),
         '/cart_page': (context) => const CartPage(),
         '/additem_page': (context) => const AdditemPage(), 
+        '/your_listed_item_page': (context) => const YourListedItemsPage(),
       },
     );
   }

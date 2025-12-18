@@ -1,5 +1,6 @@
-import 'package:agoraofolymus/models/product.dart';
 import 'package:flutter/material.dart';
+import '../models/product.dart';
+import '../pages/product_details_page.dart';
 
 class MyProductTile extends StatelessWidget {
   final Product product;
@@ -11,44 +12,40 @@ class MyProductTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.all(10),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.grey[300],
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Icon(Icons.favorite),
-
-          const SizedBox(height: 8),
-
-          Text(
-            product.name,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ProductDetailPage(product: product),
+          ),
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.grey[300],
+          borderRadius: BorderRadius.circular(12),
+        ),
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Container(
+                color: Colors.grey[400],
+                child: const Center(
+                  child: Icon(Icons.image, size: 40),
+                ),
+              ),
             ),
-          ),
-
-          const SizedBox(height: 4),
-
-          Text(product.shortDescription),
-
-          const SizedBox(height: 6),
-
-          Text("Category: ${product.category}"),
-          Text("Rarity: ${product.rarity}"),
-
-          const SizedBox(height: 6),
-
-          Text(
-            "\$${product.price}",
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-        ],
+            const SizedBox(height: 8),
+            Text(
+              product.name,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            Text("₹${product.price}"),
+          ],
+        ),
       ),
     );
   }

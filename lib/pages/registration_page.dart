@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import '../components/my_button.dart';
 import '../components/my_textfield.dart';
 import 'login_page.dart';
+import 'auth_page.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -25,7 +29,7 @@ class _RegisterPageState extends State<RegisterPage> {
     super.dispose();
   }
 
-  void registerUser() {
+  Future<void> registerUser() async {
     if (passwordController.text != confirmPasswordController.text) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Passwords do not match")),
@@ -33,7 +37,34 @@ class _RegisterPageState extends State<RegisterPage> {
       return;
     }
 
-    debugPrint("Register user");
+    try {
+      // 1️⃣ Create user in Firebase Auth
+      UserCredential userCredential =
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
+      );
+
+      final uid = userCredential.user!.uid;
+
+      // 2️⃣ Save user profile in Firestore
+      await FirebaseFirestore.instance.collection('users').doc(uid).set({
+        'username': usernameController.text.trim(),
+        'email': emailController.text.trim(),
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      // 3️⃣ Go to AuthPage → Marketplace
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const AuthPage()),
+        (route) => false,
+      );
+    } on FirebaseAuthException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message ?? "Registration failed")),
+      );
+    }
   }
 
   @override

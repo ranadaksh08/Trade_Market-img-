@@ -1,11 +1,10 @@
-import 'package:agoraofolymus/components/my_button.dart';
-import 'package:agoraofolymus/components/my_textfield.dart';
-import 'package:agoraofolymus/models/product.dart';
-import 'package:agoraofolymus/models/shop.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 
-enum Rarity { common, rare, legendary, mythical }
+import '../models/product.dart';
+import '../models/shop.dart';
+import '../components/my_textfield.dart';
 
 class AdditemPage extends StatefulWidget {
   const AdditemPage({super.key});
@@ -21,13 +20,20 @@ class _AdditemPageState extends State<AdditemPage> {
   final longDescController = TextEditingController();
 
   String selectedCategory = "Weapon";
-  Rarity selectedRarity = Rarity.common;
+  String selectedRarity = "Common";
 
   final List<String> categories = [
     "Weapon",
     "Armor",
     "Potion",
     "Artifact",
+  ];
+
+  final List<String> rarities = [
+    "Common",
+    "Rare",
+    "Legendary",
+    "Mythical",
   ];
 
   @override
@@ -39,72 +45,65 @@ class _AdditemPageState extends State<AdditemPage> {
     super.dispose();
   }
 
-  void _submitItem() {
+  Future<void> submitItem() async {
     if (nameController.text.isEmpty ||
+        priceController.text.isEmpty ||
         shortDescController.text.isEmpty ||
-        longDescController.text.isEmpty ||
-        priceController.text.isEmpty) {
+        longDescController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please fill all fields")),
       );
       return;
     }
 
-    final double? price = double.tryParse(priceController.text);
-    if (price == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Enter a valid price")),
-      );
-      return;
-    }
+    final userId = FirebaseAuth.instance.currentUser!.uid;
 
     final product = Product(
-      name: nameController.text,
-      price: price,
-      shortDescription: shortDescController.text,
-      longDescription: longDescController.text,
-      imagePath: "",
-      rarity: selectedRarity.name,
+      id: '',
+      name: nameController.text.trim(),
+      price: double.parse(priceController.text),
+      shortDescription: shortDescController.text.trim(),
+      longDescription: longDescController.text.trim(),
+      imagePath: '',
+      rarity: selectedRarity,
       category: selectedCategory,
+      ownerId: userId,
     );
 
-    context.read<Shop>().addProduct(product);
+    await context.read<Shop>().addProduct(product);
+
     Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[300],
       appBar: AppBar(title: const Text("Add Item")),
       body: SingleChildScrollView(
         child: Column(
           children: [
-            const SizedBox(height: 30),
+            const SizedBox(height: 20),
 
             MyTextfield(
               controller: nameController,
               hintText: "Item Name",
               obscureText: false,
             ),
-
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
 
             MyTextfield(
               controller: shortDescController,
-              hintText: "Short description",
+              hintText: "Short Description",
               obscureText: false,
             ),
-
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
 
             MyTextfield(
               controller: longDescController,
-              hintText: "Detailed description",
+              hintText: "Long Description",
               obscureText: false,
             ),
-
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
 
             MyTextfield(
               controller: priceController,
@@ -114,72 +113,64 @@ class _AdditemPageState extends State<AdditemPage> {
 
             const SizedBox(height: 20),
 
-            // Category
+            // 🔽 CATEGORY DROPDOWN (RESTORED)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 25),
               child: DropdownButtonFormField<String>(
                 value: selectedCategory,
-                decoration: const InputDecoration(
-                  filled: true,
-                  fillColor: Color(0xFFE0E0E0),
-                  border: OutlineInputBorder(),
-                  labelText: "Category",
-                ),
                 items: categories
-                    .map((c) => DropdownMenuItem(value: c, child: Text(c)))
-                    .toList(),
-                onChanged: (value) {
-                  setState(() => selectedCategory = value!);
-                },
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            // Rarity
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 25),
-              child: DropdownButtonFormField<Rarity>(
-                value: selectedRarity,
-                decoration: const InputDecoration(
-                  filled: true,
-                  fillColor: Color(0xFFE0E0E0),
-                  border: OutlineInputBorder(),
-                  labelText: "Rarity",
-                ),
-                items: Rarity.values
                     .map(
-                      (r) => DropdownMenuItem(
-                        value: r,
-                        child: Text(r.name.toUpperCase()),
+                      (c) => DropdownMenuItem(
+                        value: c,
+                        child: Text(c),
                       ),
                     )
                     .toList(),
                 onChanged: (value) {
-                  setState(() => selectedRarity = value!);
+                  setState(() {
+                    selectedCategory = value!;
+                  });
                 },
+                decoration: const InputDecoration(
+                  labelText: "Category",
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 15),
+
+            // 🔽 RARITY DROPDOWN (RESTORED)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 25),
+              child: DropdownButtonFormField<String>(
+                value: selectedRarity,
+                items: rarities
+                    .map(
+                      (r) => DropdownMenuItem(
+                        value: r,
+                        child: Text(r),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (value) {
+                  setState(() {
+                    selectedRarity = value!;
+                  });
+                },
+                decoration: const InputDecoration(
+                  labelText: "Rarity",
+                ),
               ),
             ),
 
             const SizedBox(height: 30),
 
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 25),
-              child: MyButton(
-                onTap: _submitItem,
-                child: const Center(
-                  child: Text(
-                    "Add Item to Marketplace",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
+            ElevatedButton(
+              onPressed: submitItem,
+              child: const Text("Add Item"),
             ),
 
-            const SizedBox(height: 40),
+            const SizedBox(height: 20),
           ],
         ),
       ),

@@ -12,9 +12,13 @@ class WelcomePage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
-              "Welcome to Agora of Olympus",
-              style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+  
+            Center(
+              
+              child: const Text(
+                "Agora of Olympus",
+                style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+              ),
             ),
             const SizedBox(height: 40),
             MyButton(
