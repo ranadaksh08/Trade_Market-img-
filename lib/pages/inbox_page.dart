@@ -39,8 +39,19 @@ class InboxPage extends StatelessWidget {
               // 🔍 Find the other user
               final List participants =
                   chatData['participants'] ?? [];
-              final otherUserId =
-                  participants.firstWhere((id) => id != currentUid);
+              String? otherUserId;
+
+for (final id in participants) {
+  if (id != currentUid) {
+    otherUserId = id;
+    break;
+  }
+}
+
+if (otherUserId == null) {
+  return const SizedBox(); // skip broken chat safely
+}
+
 
               // 🔔 Highlight if last message not sent by me
               final bool isNew =
