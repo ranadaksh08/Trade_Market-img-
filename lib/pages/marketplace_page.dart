@@ -29,9 +29,18 @@ class _MarketplacePageState extends State<MarketplacePage> {
     final products = shop.marketplace;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Marketplace"),
-      ),
+        appBar: AppBar(
+  title: const Text("Marketplace"),
+  actions: [
+    IconButton(
+      icon: const Icon(Icons.message),
+      onPressed: () {
+        Navigator.pushNamed(context, '/inbox_page');
+      },
+    ),
+  ],
+),
+
       drawer: const MyDrawer(),
       body: products.isEmpty
           ? const Center(child: Text("No items available"))

@@ -1,8 +1,9 @@
 import 'package:agoraofolymus/components/my_button.dart';
 import 'package:agoraofolymus/components/my_textfield.dart';
-import 'package:agoraofolymus/pages/marketplace_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
+import 'auth_page.dart';
 import 'registration_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -30,10 +31,11 @@ class _LoginPageState extends State<LoginPage> {
         password: passwordController.text.trim(),
       );
 
-      // ✅ MANUAL NAVIGATION
-      Navigator.pushReplacement(
+      // ✅ LET AuthPage HANDLE NAVIGATION
+      Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (_) => const MarketplacePage()),
+        MaterialPageRoute(builder: (_) => const AuthPage()),
+        (route) => false,
       );
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(

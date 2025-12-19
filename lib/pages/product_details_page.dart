@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import '../models/product.dart';
 import 'seller_profile_page.dart';
+import 'chat_page.dart';
 
 class ProductDetailPage extends StatelessWidget {
   final Product product;
@@ -9,6 +13,53 @@ class ProductDetailPage extends StatelessWidget {
     super.key,
     required this.product,
   });
+
+  Future<void> _openChat(BuildContext context) async {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please login to message the seller")),
+      );
+      return;
+    }
+
+    final buyerId = user.uid;
+    final sellerId = product.ownerId;
+
+    final query = await FirebaseFirestore.instance
+        .collection('chats')
+        .where('buyerId', isEqualTo: buyerId)
+        .where('sellerId', isEqualTo: sellerId)
+        .where('productId', isEqualTo: product.id)
+        .limit(1)
+        .get();
+
+    String chatId;
+
+    if (query.docs.isNotEmpty) {
+      chatId = query.docs.first.id;
+    } else {
+      final doc =
+          await FirebaseFirestore.instance.collection('chats').add({
+        'buyerId': buyerId,
+        'sellerId': sellerId,
+        'productId': product.id,
+        'participants': [buyerId, sellerId],
+        'lastMessage': '',
+        'lastUpdated': FieldValue.serverTimestamp(),
+      });
+
+      chatId = doc.id;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ChatPage(chatId: chatId),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +122,7 @@ class ProductDetailPage extends StatelessWidget {
 
                   const SizedBox(height: 16),
 
-                  // 📄 Short Description
+                  // 📄 Description
                   const Text(
                     "Description",
                     style: TextStyle(
@@ -84,7 +135,7 @@ class ProductDetailPage extends StatelessWidget {
 
                   const SizedBox(height: 30),
 
-                  // 🔥 Seller Profile Button
+                  // 🔥 Seller Profile Button (UNCHANGED)
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -99,6 +150,17 @@ class ProductDetailPage extends StatelessWidget {
                         );
                       },
                       child: const Text("Seller Profile"),
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // 💬 Message Seller Button (NEW)
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => _openChat(context),
+                      child: const Text("Message Seller"),
                     ),
                   ),
                 ],
