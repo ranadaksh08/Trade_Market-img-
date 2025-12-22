@@ -16,10 +16,16 @@ class MyListTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: Icon(
-        icon,
-        color: Colors.grey,
+        icon, // ✅ YOUR ICON IS BACK
+        color: const Color(0xFFB0B3BA), // Ash Grey
       ),
-      title: Text(text),
+      title: Text(
+        text,
+        style: const TextStyle(
+          fontSize: 16.0,
+          color: Color(0xFFB0B3BA), // Ash Grey
+        ),
+      ),
       onTap: onTap,
     );
   }

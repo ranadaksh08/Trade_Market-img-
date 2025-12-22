@@ -1,138 +1,240 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
 
-class ProfilePage extends StatelessWidget {
+import '../models/shop.dart';
+import '../components/my_product_tile2.dart';
+
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  bool showListed = true; // default tab
 
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser!;
+    final shop = context.watch<Shop>();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+  context.read<Shop>().fetchFavorites(user.uid);
+   });
+
+
+    final listedItems = shop.userItems(user.uid);
+    final favoriteItems = shop.favorites; // will be empty for now
 
     return Scaffold(
+      backgroundColor: const Color(0xFF0E0F13),
       appBar: AppBar(
-        title: const Text("My Profile"),
+        backgroundColor: const Color(0xFF0E0F13),
+        elevation: 0,
         centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pushReplacementNamed(
-              context,
-              '/marketplace_page',
-            );
-          },
+        title: const Text(
+          "My Profile",
+          style: TextStyle(color: Color(0xFFC9A24D)),
         ),
+        iconTheme: const IconThemeData(color: Color(0xFFC9A24D)),
       ),
-      body: FutureBuilder<DocumentSnapshot>(
-        future: FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .get(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
 
-          if (!snapshot.hasData || !snapshot.data!.exists) {
-            return const Center(child: Text("Profile data not found"));
-          }
+      body: Column(
+        children: [
+          const SizedBox(height: 24),
 
-          final data = snapshot.data!.data() as Map<String, dynamic>;
+          // PROFILE ICON
+          const CircleAvatar(
+            radius: 55,
+            backgroundColor: Color(0xFF1A1C23),
+            child: Icon(
+              Icons.person,
+              size: 70,
+              color: Color(0xFFC9A24D),
+            ),
+          ),
 
-          return SingleChildScrollView(
-            child: Column(
+          const SizedBox(height: 16),
+
+          // USER INFO
+          FutureBuilder<DocumentSnapshot>(
+            future: FirebaseFirestore.instance
+                .collection('users')
+                .doc(user.uid)
+                .get(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) return const SizedBox();
+
+              final data =
+                  snapshot.data!.data() as Map<String, dynamic>;
+
+              return Column(
+                children: [
+                  Text(
+                    data['username'] ?? "Unknown User",
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    data['email'] ?? "",
+                    style: const TextStyle(color: Color(0xFFA0A0A0)),
+                  ),
+                ],
+              );
+            },
+          ),
+
+          const SizedBox(height: 24),
+
+          // STATS
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 40),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const SizedBox(height: 30),
-
-                CircleAvatar(
-                  radius: 70,
-                  backgroundColor: Colors.grey[300],
-                  child: const Icon(
-                    Icons.person,
-                    size: 80,
-                    color: Colors.black54,
-                  ),
+                _statColumn(
+                  value: listedItems.length.toString(),
+                  label: "Listed Items",
                 ),
-
-                const SizedBox(height: 15),
-
-                Text(
-                  data['username'] ?? "Unknown User",
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
+                _statColumn(
+                  value: "",
+                  label: "Rating",
                 ),
-
-                const SizedBox(height: 5),
-
-                Text(
-                  data['email'] ?? "",
-                  style: const TextStyle(
-                    color: Colors.grey,
-                  ),
-                ),
-
-                const SizedBox(height: 30),
-                const Divider(),
-
-                const SizedBox(height: 20),
-
-                _profileTile(
-                  icon: Icons.inventory_2_outlined,
-                  text: "Your Listed Items",
-                  onTap: () {
-                    Navigator.pushNamed(context, '/your_listed_item_page');
-                  },
-                ),
-
-                const SizedBox(height: 15),
-
-                _profileTile(
-                  icon: Icons.shopping_cart,
-                  text: "My Cart",
-                  onTap: () {
-                    Navigator.pushNamed(context, '/cart_page');
-                  },
-                ),
-
-                const SizedBox(height: 15),
-
-                _profileTile(
-                  icon: Icons.settings,
-                  text: "Account Settings",
-                  onTap: () {},
-                ),
-
-                const SizedBox(height: 30),
               ],
             ),
-          );
-        },
-      ),
-    );
-  }
+          ),
 
-  Widget _profileTile({
-    required IconData icon,
-    required String text,
-    required VoidCallback onTap,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 25),
-      child: GestureDetector(
-        onTap: onTap,
-        child: Row(
-          children: [
-            Icon(icon),
-            const SizedBox(width: 12),
-            Text(
-              text,
-              style: const TextStyle(fontSize: 16),
+          const SizedBox(height: 24),
+          const Divider(color: Color(0xFF2A2A2A)),
+          const SizedBox(height: 12),
+
+          // TABS
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 28),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _profileTab(
+                  icon: Icons.inventory_2_outlined,
+                  text: "Listed Items",
+                  active: showListed,
+                  onTap: () {
+                    setState(() => showListed = true);
+                  },
+                ),
+                _profileTab(
+                  icon: Icons.favorite_border_outlined,
+                  text: "Favorite",
+                  active: !showListed,
+                  onTap: () {
+                    setState(() => showListed = false);
+                  },
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+          ),
+
+          const SizedBox(height: 12),
+
+          // ✅ ONLY THIS SCROLLS
+          Expanded(
+            child: showListed
+                ? listedItems.isEmpty
+                    ? const Center(
+                        child: Text(
+                          "No items listed",
+                          style: TextStyle(color: Color(0xFFA0A0A0)),
+                        ),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: listedItems.length,
+                        itemBuilder: (context, index) {
+                          return MyProductTile2(
+                            product: listedItems[index],
+                          );
+                        },
+                      )
+                : favoriteItems.isEmpty
+                    ? const Center(
+                        child: Text(
+                          "No favorites yet",
+                          style: TextStyle(color: Color(0xFFA0A0A0)),
+                        ),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: favoriteItems.length,
+                        itemBuilder: (context, index) {
+                          return MyProductTile2(
+                            product: favoriteItems[index],
+                          );
+                        },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+
+                Widget _statColumn({
+                  required String value,
+                  required String label,
+                }) {
+                  return Column(
+                    children: [
+                      Text(
+                        value,
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFFC9A24D),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        label,
+                        style: const TextStyle(
+                          color: Color(0xFFA0A0A0),
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  );
+                }
+
+                Widget _profileTab({
+                  required IconData icon,
+                  required String text,
+                  required bool active,
+                  required VoidCallback onTap,
+                }) {
+                  return GestureDetector(
+                    onTap: onTap,
+                    child: Row(
+                      children: [
+                        Icon(
+                          icon,
+                          color: active
+                              ? const Color(0xFFC9A24D)
+                              : const Color(0xFF6F6F6F),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          text,
+                          style: TextStyle(
+                            color: active ? Colors.white : const Color(0xFF6F6F6F),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+              }

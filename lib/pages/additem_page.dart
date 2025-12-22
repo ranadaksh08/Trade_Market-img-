@@ -117,7 +117,7 @@ class _AdditemPageState extends State<AdditemPage> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 25),
               child: DropdownButtonFormField<String>(
-                value: selectedCategory,
+                initialValue: selectedCategory,
                 items: categories
                     .map(
                       (c) => DropdownMenuItem(
@@ -143,7 +143,7 @@ class _AdditemPageState extends State<AdditemPage> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 25),
               child: DropdownButtonFormField<String>(
-                value: selectedRarity,
+                initialValue: selectedRarity,
                 items: rarities
                     .map(
                       (r) => DropdownMenuItem(

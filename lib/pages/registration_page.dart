@@ -38,7 +38,6 @@ class _RegisterPageState extends State<RegisterPage> {
     }
 
     try {
-      // 1️⃣ Create user in Firebase Auth
       UserCredential userCredential =
           await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: emailController.text.trim(),
@@ -47,14 +46,12 @@ class _RegisterPageState extends State<RegisterPage> {
 
       final uid = userCredential.user!.uid;
 
-      // 2️⃣ Save user profile in Firestore
       await FirebaseFirestore.instance.collection('users').doc(uid).set({
         'username': usernameController.text.trim(),
         'email': emailController.text.trim(),
         'createdAt': FieldValue.serverTimestamp(),
       });
 
-      // 3️⃣ Go to AuthPage → Marketplace
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const AuthPage()),
@@ -70,112 +67,146 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[300],
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                const SizedBox(height: 40),
+      body: Container(
+        width: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF0E0F13), // Obsidian
+              Color(0xFF1A1C23), // Charcoal
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  const SizedBox(height: 30),
 
-                // logo
-                const Icon(
-                  Icons.person_add,
-                  size: 80,
-                ),
-
-                const SizedBox(height: 20),
-
-                const Text(
-                  "Create an Account",
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-
-                const SizedBox(height: 30),
-
-                // username
-                MyTextfield(
-                  controller: usernameController,
-                  hintText: "Username",
-                  obscureText: false,
-                ),
-
-                const SizedBox(height: 15),
-
-                // email
-                MyTextfield(
-                  controller: emailController,
-                  hintText: "Email",
-                  obscureText: false,
-                ),
-
-                const SizedBox(height: 15),
-
-                // password
-                MyTextfield(
-                  controller: passwordController,
-                  hintText: "Password",
-                  obscureText: true,
-                ),
-
-                const SizedBox(height: 15),
-
-                // confirm password
-                MyTextfield(
-                  controller: confirmPasswordController,
-                  hintText: "Confirm Password",
-                  obscureText: true,
-                ),
-
-                const SizedBox(height: 30),
-
-                // register button
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 25),
-                  child: MyButton(
-                    onTap: registerUser,
-                    child: const Center(
-                      child: Text(
-                        "Register",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
+                  // 🏛 TITLE
+                  const Text(
+                    "AGORA OF OLYMPUS",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 26,
+                      letterSpacing: 4,
+                      color: Color(0xFFC9A24D),
+                      fontWeight: FontWeight.w300,
                     ),
                   ),
-                ),
 
-                const SizedBox(height: 25),
+                  const SizedBox(height: 8),
 
-                // login redirect
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text("Already have an account? "),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => LoginPage(),
+                  const Text(
+                    "Create your divine identity",
+                    style: TextStyle(
+                      color: Color(0xFFA0A0A0),
+                      fontSize: 13,
+                    ),
+                  ),
+
+                  const SizedBox(height: 40),
+
+                  // 🧾 REGISTER CARD
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 24),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 30,
+                      horizontal: 16,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1A1C23),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: const Color(0xFFC9A24D).withOpacity(0.25),
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        MyTextfield(
+                          controller: usernameController,
+                          hintText: "Username",
+                          obscureText: false,
+                        ),
+                        const SizedBox(height: 16),
+                        MyTextfield(
+                          controller: emailController,
+                          hintText: "Email",
+                          obscureText: false,
+                        ),
+                        const SizedBox(height: 16),
+                        MyTextfield(
+                          controller: passwordController,
+                          hintText: "Password",
+                          obscureText: true,
+                        ),
+                        const SizedBox(height: 16),
+                        MyTextfield(
+                          controller: confirmPasswordController,
+                          hintText: "Confirm Password",
+                          obscureText: true,
+                        ),
+                        const SizedBox(height: 24),
+                        MyButton(
+                          onTap: registerUser,
+                          child: const Center(
+                            child: Text(
+                              "REGISTER",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1.5,
+                              ),
+                            ),
                           ),
-                        );
-                      },
-                      child: const Text(
-                        "Login",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue,
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // 🔁 LOGIN LINK
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        "Already have an account? ",
+                        style: TextStyle(color: Colors.white70),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const LoginPage(),
+                            ),
+                          );
+                        },
+                        child: const Text(
+                          "Login",
+                          style: TextStyle(
+                            color: Color(0xFFC9A24D),
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 1,
+                            shadows: [
+                              Shadow(
+                                blurRadius: 8,
+                                color: Color(0x66C9A24D),
+                                offset: Offset(0, 0),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                    ],
+                  ),
+
+                  const SizedBox(height: 30),
+                ],
+              ),
             ),
           ),
         ),

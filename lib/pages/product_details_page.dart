@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
+// ADD THESE IMPORTS
+import 'package:provider/provider.dart';
+import '../models/shop.dart';
 import '../models/product.dart';
 import 'seller_profile_page.dart';
 import 'chat_page.dart';
@@ -16,13 +18,7 @@ class ProductDetailPage extends StatelessWidget {
 
   Future<void> _openChat(BuildContext context) async {
     final user = FirebaseAuth.instance.currentUser;
-
-    if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please login to message the seller")),
-      );
-      return;
-    }
+    if (user == null) return;
 
     final buyerId = user.uid;
     final sellerId = product.ownerId;
@@ -61,6 +57,23 @@ class ProductDetailPage extends StatelessWidget {
     );
   }
 
+  // ⭐ ADD TO FAVORITES
+  Future<void> _addToFavorites(BuildContext context) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('favorites')
+        .doc(product.id)
+        .set(product.toFirestore());
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Added to favorites")),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -71,17 +84,14 @@ class ProductDetailPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 🖼 Product Image
+            // IMAGE
             Container(
               height: 220,
               width: double.infinity,
               color: Colors.grey[300],
               child: product.imagePath.isEmpty
                   ? const Icon(Icons.image, size: 100)
-                  : Image.asset(
-                      product.imagePath,
-                      fit: BoxFit.cover,
-                    ),
+                  : Image.asset(product.imagePath, fit: BoxFit.cover),
             ),
 
             Padding(
@@ -89,7 +99,6 @@ class ProductDetailPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 🏷 Name
                   Text(
                     product.name,
                     style: const TextStyle(
@@ -100,7 +109,6 @@ class ProductDetailPage extends StatelessWidget {
 
                   const SizedBox(height: 8),
 
-                  // 💰 Price
                   Text(
                     "₹${product.price}",
                     style: const TextStyle(
@@ -109,9 +117,8 @@ class ProductDetailPage extends StatelessWidget {
                     ),
                   ),
 
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
 
-                  // 🧩 Category & Rarity
                   Row(
                     children: [
                       Chip(label: Text(product.category)),
@@ -122,7 +129,6 @@ class ProductDetailPage extends StatelessWidget {
 
                   const SizedBox(height: 16),
 
-                  // 📄 Description
                   const Text(
                     "Description",
                     style: TextStyle(
@@ -135,7 +141,7 @@ class ProductDetailPage extends StatelessWidget {
 
                   const SizedBox(height: 30),
 
-                  // 🔥 Seller Profile Button (UNCHANGED)
+                  // SELLER PROFILE
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -155,7 +161,7 @@ class ProductDetailPage extends StatelessWidget {
 
                   const SizedBox(height: 12),
 
-                  // 💬 Message Seller Button (NEW)
+                  // 💬 Message Seller Button
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -163,6 +169,38 @@ class ProductDetailPage extends StatelessWidget {
                       child: const Text("Message Seller"),
                     ),
                   ),
+
+
+                  const SizedBox(height: 12),
+
+                  // ⭐ FAVORITE TOGGLE BUTTON
+                  SizedBox(
+                    width: double.infinity,
+                    child: Consumer<Shop>(
+                      builder: (context, shop, _) {
+                        final user = FirebaseAuth.instance.currentUser!;
+                        final isFav = shop.isFavorite(product.id);
+
+                        return OutlinedButton.icon(
+                          icon: Icon(
+                            isFav ? Icons.favorite : Icons.favorite_border,
+                            color: isFav ? Colors.red : null,
+                          ),
+                          label: Text(
+                            isFav ? "Remove from Favorites" : "Add to Favorites",
+                          ),
+                          onPressed: () async {
+                            if (isFav) {
+                              await shop.removeFromFavorites(product, user.uid);
+                            } else {
+                              await shop.addToFavorites(product, user.uid);
+                            }
+                          },
+                        );
+                      },
+                    ),
+                  ),
+
                 ],
               ),
             ),

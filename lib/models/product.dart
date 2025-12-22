@@ -28,7 +28,7 @@ class Product {
     final data = doc.data() as Map<String, dynamic>;
 
     return Product(
-      id: doc.id,
+      id: data['id'] ?? doc.id,
       name: data['name'] ?? '',
       price: (data['price'] as num?)?.toDouble() ?? 0.0,
       shortDescription: data['shortDescription'] ?? '',

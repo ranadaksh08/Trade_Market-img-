@@ -17,7 +17,6 @@ class _MarketplacePageState extends State<MarketplacePage> {
   void initState() {
     super.initState();
 
-    // 🔥 Fetch products from Firestore once
     Future.microtask(() {
       context.read<Shop>().fetchMarketplace();
     });
@@ -29,35 +28,68 @@ class _MarketplacePageState extends State<MarketplacePage> {
     final products = shop.marketplace;
 
     return Scaffold(
-        appBar: AppBar(
-  title: const Text("Marketplace"),
-  actions: [
-    IconButton(
-      icon: const Icon(Icons.message),
-      onPressed: () {
-        Navigator.pushNamed(context, '/inbox_page');
-      },
-    ),
-  ],
-),
-
-      drawer: const MyDrawer(),
-      body: products.isEmpty
-          ? const Center(child: Text("No items available"))
-          : GridView.builder(
-              padding: const EdgeInsets.all(12),
-              gridDelegate:
-                  const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 0.75,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-              ),
-              itemCount: products.length,
-              itemBuilder: (context, index) {
-                return MyProductTile(product: products[index]);
-              },
+      appBar: AppBar(
+        iconTheme: const IconThemeData(
+          color: Color(0xFFC9A24D),
+        ),
+        title: const Text(
+          "Marketplace",
+          style: TextStyle(
+            color: Color(0xFFC9A24D),
+          ),
+        ),
+        backgroundColor: const Color(0xFF0E0F13),
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(
+              Icons.message,
+              color: Color(0xFFC9A24D),
             ),
+            onPressed: () {
+              Navigator.pushNamed(context, '/inbox_page');
+            },
+          ),
+        ],
+      ),
+
+      // ORIGINAL DRAWER
+      drawer: const MyDrawer(),
+
+      body: Container(
+        width: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF0E0F13),
+              Color(0xFF1A1C23),
+            ],
+          ),
+        ),
+        child: products.isEmpty
+            ? const Center(
+                child: Text(
+                  "No items available",
+                  style: TextStyle(color: Color(0xFFB0B3BA)),
+                ),
+              )
+            : GridView.builder(
+                padding: const EdgeInsets.all(12),
+                gridDelegate:
+                    const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  childAspectRatio: 0.75,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                ),
+                itemCount: products.length,
+                itemBuilder: (context, index) {
+                  return MyProductTile(product: products[index]);
+                },
+              ),
+      ),
     );
   }
 }
