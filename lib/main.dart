@@ -7,6 +7,7 @@ import 'package:agoraofolymus/pages/marketplace_page.dart';
 import 'package:agoraofolymus/pages/profile_page.dart';
 import 'package:agoraofolymus/pages/welcome_page.dart';
 import 'package:agoraofolymus/pages/your_listed_item_page.dart';
+import 'package:agoraofolymus/providers/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -18,12 +19,16 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  runApp(
-    ChangeNotifierProvider(
-      create: (_) => Shop(),
-      child: const MyApp(),
-    ),
-  );
+ runApp(
+  MultiProvider(
+    providers: [
+      ChangeNotifierProvider(create: (_) => Shop()),
+      ChangeNotifierProvider(create: (_) => UserProvider()),
+    ],
+    child: const MyApp(),
+  ),
+);
+
 }
 
 class MyApp extends StatelessWidget {

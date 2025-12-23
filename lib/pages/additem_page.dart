@@ -1,3 +1,4 @@
+import 'package:agoraofolymus/components/bottom_nav_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
@@ -78,6 +79,11 @@ class _AdditemPageState extends State<AdditemPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      bottomNavigationBar: const BottomNavBar(
+        currentIndex: 1,
+        backgroundColor: Colors.white,
+        ),
+
       appBar: AppBar(title: const Text("Add Item")),
       body: SingleChildScrollView(
         child: Column(

@@ -1,3 +1,4 @@
+import 'package:agoraofolymus/components/bottom_nav_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -12,6 +13,10 @@ class InboxPage extends StatelessWidget {
     final currentUid = FirebaseAuth.instance.currentUser!.uid;
 
     return Scaffold(
+        bottomNavigationBar: const BottomNavBar(
+        currentIndex: 2,
+        backgroundColor: Colors.white,
+      ),
       appBar: AppBar(
         title: const Text("Inbox"),
       ),

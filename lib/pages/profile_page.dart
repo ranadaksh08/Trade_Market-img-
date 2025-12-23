@@ -1,3 +1,4 @@
+import 'package:agoraofolymus/components/bottom_nav_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -30,6 +31,10 @@ class _ProfilePageState extends State<ProfilePage> {
     final favoriteItems = shop.favorites; // will be empty for now
 
     return Scaffold(
+      bottomNavigationBar: const BottomNavBar(
+        currentIndex: 3,
+        backgroundColor: Color(0xFF0E0F13),
+      ),
       backgroundColor: const Color(0xFF0E0F13),
       appBar: AppBar(
         backgroundColor: const Color(0xFF0E0F13),
