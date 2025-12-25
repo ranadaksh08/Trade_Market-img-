@@ -71,7 +71,12 @@ class _AdditemPageState extends State<AdditemPage> {
       ownerId: userId,
     );
 
-    await context.read<Shop>().addProduct(product);
+      // 🔥 DEFINE shop ONCE
+  final shop = context.read<Shop>();
+
+  await shop.addProduct(product);
+  
+    
 
     Navigator.pop(context);
   }

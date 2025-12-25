@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
 import '../models/product.dart';
+import '../models/shop.dart';
 import '../pages/product_details_page.dart';
 
 class MyProductTile2 extends StatelessWidget {
   final Product product;
+  final VoidCallback? onDelete; // 👈 optional delete
 
   const MyProductTile2({
     super.key,
     required this.product,
+    this.onDelete,
   });
 
   @override
@@ -25,10 +30,10 @@ class MyProductTile2 extends StatelessWidget {
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: const Color(0xFF1A1C23), // Charcoal Night
+          color: const Color(0xFF1A1C23),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: const Color(0x33C9A24D), // Gold @ 20%
+            color: const Color(0x33C9A24D),
           ),
         ),
         child: Row(
@@ -85,12 +90,19 @@ class MyProductTile2 extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF6FCF97), // Emerald Green
+                      color: Color(0xFF6FCF97),
                     ),
                   ),
                 ],
               ),
             ),
+
+            // 🗑 DELETE BUTTON (ONLY IF PROVIDED)
+            if (onDelete != null)
+              IconButton(
+                icon: const Icon(Icons.delete, color: Colors.redAccent),
+                onPressed: onDelete,
+              ),
           ],
         ),
       ),

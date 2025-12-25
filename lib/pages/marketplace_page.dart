@@ -18,15 +18,16 @@ class MarketplacePage extends StatefulWidget {
 }
 
 class _MarketplacePageState extends State<MarketplacePage> {
+  bool _loaded = false;
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
 
-    Future.microtask(() {
+    if (!_loaded) {
       context.read<Shop>().fetchMarketplace();
-    });
+      _loaded = true;
+    }
   }
-
   @override
   Widget build(BuildContext context) {
     final shop = context.watch<Shop>();
@@ -88,7 +89,29 @@ class _MarketplacePageState extends State<MarketplacePage> {
                   ),
                 ],
               ),
-              const Icon(Icons.person, color: Colors.white),
+              // ================= PROFILE ICON =================
+                GestureDetector(
+                  onTap: () {
+                    Navigator.pushNamed(context, '/profile_page');
+                  },
+                  child: Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: const Color(0xFFC9A24D),
+                        width: 2,
+                      ),
+                    ),
+                    child: ClipOval(
+                      child: Image.asset(
+                        'lib/images/zeus_profile.png',
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                ),
             ],
           ),
         ),
@@ -142,7 +165,7 @@ class _MarketplacePageState extends State<MarketplacePage> {
           height: 60,
           child: ListView(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 25),
+            
             children: const [
               CategoryCard(),
               CategoryCard(),
@@ -156,23 +179,37 @@ class _MarketplacePageState extends State<MarketplacePage> {
       const SliverToBoxAdapter(child: SizedBox(height: 20)),
 
       // 🛒 PRODUCT GRID (KEY PART)
-      SliverPadding(
-        padding: const EdgeInsets.symmetric(horizontal: 25),
-        sliver: SliverGrid(
-          delegate: SliverChildBuilderDelegate(
-            (context, index) {
-              return MyProductTile(product: products[index]);
-            },
-            childCount: products.length,
-          ),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            childAspectRatio: 0.75,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-          ),
+      if (products.isEmpty)
+  const SliverToBoxAdapter(
+    child: Padding(
+      padding: EdgeInsets.only(top: 120),
+      child: Center(
+        child: Text(
+          "No items available",
+          style: TextStyle(color: Color(0xFFA0A0A0)),
         ),
       ),
+    ),
+  )
+else
+  SliverPadding(
+    padding: const EdgeInsets.symmetric(horizontal: 25),
+    sliver: SliverGrid(
+      delegate: SliverChildBuilderDelegate(
+        (context, index) {
+          return MyProductTile(product: products[index]);
+        },
+        childCount: products.length,
+      ),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 0.75,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+      ),
+    ),
+  ),
+
 
       const SliverToBoxAdapter(child: SizedBox(height: 100)),
     ],

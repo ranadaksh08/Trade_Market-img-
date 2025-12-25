@@ -1,11 +1,12 @@
-import 'package:agoraofolymus/components/bottom_nav_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 
-import '../models/shop.dart';
+import '../components/bottom_nav_bar.dart';
 import '../components/my_product_tile2.dart';
+import '../models/shop.dart';
+import '../models/product.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -15,27 +16,29 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  bool showListed = true; // default tab
+  bool showListed = true;
 
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser!;
     final shop = context.watch<Shop>();
 
+    // Fetch favorites safely after build
     WidgetsBinding.instance.addPostFrameCallback((_) {
-  context.read<Shop>().fetchFavorites(user.uid);
-   });
+      context.read<Shop>().fetchFavorites(user.uid);
+    });
 
-
-    final listedItems = shop.userItems(user.uid);
-    final favoriteItems = shop.favorites; // will be empty for now
+    final List<Product> listedItems = shop.userItems(user.uid);
+    final List<Product> favoriteItems = shop.favorites;
 
     return Scaffold(
+      backgroundColor: const Color(0xFF0E0F13),
+
       bottomNavigationBar: const BottomNavBar(
         currentIndex: 3,
         backgroundColor: Color(0xFF0E0F13),
       ),
-      backgroundColor: const Color(0xFF0E0F13),
+
       appBar: AppBar(
         backgroundColor: const Color(0xFF0E0F13),
         elevation: 0,
@@ -51,20 +54,28 @@ class _ProfilePageState extends State<ProfilePage> {
         children: [
           const SizedBox(height: 24),
 
-          // PROFILE ICON
-          const CircleAvatar(
-            radius: 55,
-            backgroundColor: Color(0xFF1A1C23),
-            child: Icon(
-              Icons.person,
-              size: 70,
-              color: Color(0xFFC9A24D),
+       // ================= PROFILE ICON =================
+            Container(
+              width: 110,
+              height: 110,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: const Color(0xFFC9A24D),
+                  width: 2,
+                ),
+              ),
+              child: ClipOval(
+                child: Image.asset(
+                  'lib/images/zeus_profile.png',
+                  fit: BoxFit.cover,
+                ),
+              ),
             ),
-          ),
 
           const SizedBox(height: 16),
 
-          // USER INFO
+          // ================= USER INFO =================
           FutureBuilder<DocumentSnapshot>(
             future: FirebaseFirestore.instance
                 .collection('users')
@@ -89,7 +100,9 @@ class _ProfilePageState extends State<ProfilePage> {
                   const SizedBox(height: 4),
                   Text(
                     data['email'] ?? "",
-                    style: const TextStyle(color: Color(0xFFA0A0A0)),
+                    style: const TextStyle(
+                      color: Color(0xFFA0A0A0),
+                    ),
                   ),
                 ],
               );
@@ -98,7 +111,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
           const SizedBox(height: 24),
 
-          // STATS
+          // ================= STATS =================
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 40),
             child: Row(
@@ -120,7 +133,7 @@ class _ProfilePageState extends State<ProfilePage> {
           const Divider(color: Color(0xFF2A2A2A)),
           const SizedBox(height: 12),
 
-          // TABS
+          // ================= TABS =================
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 28),
             child: Row(
@@ -130,17 +143,13 @@ class _ProfilePageState extends State<ProfilePage> {
                   icon: Icons.inventory_2_outlined,
                   text: "Listed Items",
                   active: showListed,
-                  onTap: () {
-                    setState(() => showListed = true);
-                  },
+                  onTap: () => setState(() => showListed = true),
                 ),
                 _profileTab(
                   icon: Icons.favorite_border_outlined,
-                  text: "Favorite",
+                  text: "Favorites",
                   active: !showListed,
-                  onTap: () {
-                    setState(() => showListed = false);
-                  },
+                  onTap: () => setState(() => showListed = false),
                 ),
               ],
             ),
@@ -148,22 +157,60 @@ class _ProfilePageState extends State<ProfilePage> {
 
           const SizedBox(height: 12),
 
-          // ✅ ONLY THIS SCROLLS
+          // ================= LIST SECTION =================
           Expanded(
             child: showListed
                 ? listedItems.isEmpty
                     ? const Center(
                         child: Text(
                           "No items listed",
-                          style: TextStyle(color: Color(0xFFA0A0A0)),
+                          style:
+                              TextStyle(color: Color(0xFFA0A0A0)),
                         ),
                       )
                     : ListView.builder(
                         padding: const EdgeInsets.all(16),
                         itemCount: listedItems.length,
                         itemBuilder: (context, index) {
+                          final product = listedItems[index];
+
                           return MyProductTile2(
-                            product: listedItems[index],
+                            product: product,
+                            onDelete: () async {
+                              final confirm =
+                                  await showDialog<bool>(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  title:
+                                      const Text("Delete Item"),
+                                  content: const Text(
+                                    "Are you sure you want to remove this item from the marketplace?",
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(
+                                              context, false),
+                                      child:
+                                          const Text("Cancel"),
+                                    ),
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(
+                                              context, true),
+                                      child:
+                                          const Text("Delete"),
+                                    ),
+                                  ],
+                                ),
+                              );
+
+                              if (confirm == true) {
+                                context
+                                    .read<Shop>()
+                                    .removeProduct(product);
+                              }
+                            },
                           );
                         },
                       )
@@ -171,7 +218,8 @@ class _ProfilePageState extends State<ProfilePage> {
                     ? const Center(
                         child: Text(
                           "No favorites yet",
-                          style: TextStyle(color: Color(0xFFA0A0A0)),
+                          style:
+                              TextStyle(color: Color(0xFFA0A0A0)),
                         ),
                       )
                     : ListView.builder(
@@ -182,64 +230,67 @@ class _ProfilePageState extends State<ProfilePage> {
                             product: favoriteItems[index],
                           );
                         },
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }
-
-                Widget _statColumn({
-                  required String value,
-                  required String label,
-                }) {
-                  return Column(
-                    children: [
-                      Text(
-                        value,
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFFC9A24D),
-                        ),
                       ),
-                      const SizedBox(height: 6),
-                      Text(
-                        label,
-                        style: const TextStyle(
-                          color: Color(0xFFA0A0A0),
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
-                  );
-                }
+          ),
+        ],
+      ),
+    );
+  }
 
-                Widget _profileTab({
-                  required IconData icon,
-                  required String text,
-                  required bool active,
-                  required VoidCallback onTap,
-                }) {
-                  return GestureDetector(
-                    onTap: onTap,
-                    child: Row(
-                      children: [
-                        Icon(
-                          icon,
-                          color: active
-                              ? const Color(0xFFC9A24D)
-                              : const Color(0xFF6F6F6F),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          text,
-                          style: TextStyle(
-                            color: active ? Colors.white : const Color(0xFF6F6F6F),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-              }
+  // ================= HELPERS =================
+
+  Widget _statColumn({
+    required String value,
+    required String label,
+  }) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFFC9A24D),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          label,
+          style: const TextStyle(
+            color: Color(0xFFA0A0A0),
+            fontSize: 14,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _profileTab({
+    required IconData icon,
+    required String text,
+    required bool active,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            color: active
+                ? const Color(0xFFC9A24D)
+                : const Color(0xFF6F6F6F),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            text,
+            style: TextStyle(
+              color:
+                  active ? Colors.white : const Color(0xFF6F6F6F),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
