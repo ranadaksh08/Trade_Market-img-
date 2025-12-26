@@ -23,7 +23,7 @@ class _ProfilePageState extends State<ProfilePage> {
     final user = FirebaseAuth.instance.currentUser!;
     final shop = context.watch<Shop>();
 
-    // Fetch favorites safely after build
+    // Fetch favorites safely
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<Shop>().fetchFavorites(user.uid);
     });
@@ -32,11 +32,11 @@ class _ProfilePageState extends State<ProfilePage> {
     final List<Product> favoriteItems = shop.favorites;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0E0F13),
+      backgroundColor: Colors.transparent,
 
       bottomNavigationBar: const BottomNavBar(
         currentIndex: 3,
-        backgroundColor: Color(0xFF0E0F13),
+        backgroundColor: Color(0xFF1A1C23),
       ),
 
       appBar: AppBar(
@@ -50,187 +50,207 @@ class _ProfilePageState extends State<ProfilePage> {
         iconTheme: const IconThemeData(color: Color(0xFFC9A24D)),
       ),
 
-      body: Column(
+      body: Stack(
         children: [
-          const SizedBox(height: 24),
-
-       // ================= PROFILE ICON =================
-            Container(
-              width: 110,
-              height: 110,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: const Color(0xFFC9A24D),
-                  width: 2,
-                ),
-              ),
-              child: ClipOval(
-                child: Image.asset(
-                  'lib/images/zeus_profile.png',
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-
-          const SizedBox(height: 16),
-
-          // ================= USER INFO =================
-          FutureBuilder<DocumentSnapshot>(
-            future: FirebaseFirestore.instance
-                .collection('users')
-                .doc(user.uid)
-                .get(),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) return const SizedBox();
-
-              final data =
-                  snapshot.data!.data() as Map<String, dynamic>;
-
-              return Column(
-                children: [
-                  Text(
-                    data['username'] ?? "Unknown User",
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    data['email'] ?? "",
-                    style: const TextStyle(
-                      color: Color(0xFFA0A0A0),
-                    ),
-                  ),
+          // 🔹 BACKGROUND GRADIENT
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xFF0E0F13),
+                  Color(0xFF1A1C23),
                 ],
-              );
-            },
-          ),
-
-          const SizedBox(height: 24),
-
-          // ================= STATS =================
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 40),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _statColumn(
-                  value: listedItems.length.toString(),
-                  label: "Listed Items",
-                ),
-                _statColumn(
-                  value: "",
-                  label: "Rating",
-                ),
-              ],
+              ),
             ),
           ),
 
-          const SizedBox(height: 24),
-          const Divider(color: Color(0xFF2A2A2A)),
-          const SizedBox(height: 12),
-
-          // ================= TABS =================
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 28),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          // 🔹 MAIN CONTENT
+          SafeArea(
+            child: Column(
               children: [
-                _profileTab(
-                  icon: Icons.inventory_2_outlined,
-                  text: "Listed Items",
-                  active: showListed,
-                  onTap: () => setState(() => showListed = true),
+                const SizedBox(height: 24),
+
+                // ================= PROFILE IMAGE =================
+                Container(
+                  width: 110,
+                  height: 110,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: const Color(0xFFC9A24D),
+                      width: 2,
+                    ),
+                  ),
+                  child: ClipOval(
+                    child: Image.asset(
+                      'lib/images/zeus_profile.png',
+                      fit: BoxFit.cover,
+                    ),
+                  ),
                 ),
-                _profileTab(
-                  icon: Icons.favorite_border_outlined,
-                  text: "Favorites",
-                  active: !showListed,
-                  onTap: () => setState(() => showListed = false),
+
+                const SizedBox(height: 16),
+
+                // ================= USER INFO =================
+                FutureBuilder<DocumentSnapshot>(
+                  future: FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(user.uid)
+                      .get(),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) return const SizedBox();
+
+                    final data =
+                        snapshot.data!.data() as Map<String, dynamic>;
+
+                    return Column(
+                      children: [
+                        Text(
+                          data['username'] ?? "Unknown User",
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          data['email'] ?? "",
+                          style: const TextStyle(
+                            color: Color(0xFFA0A0A0),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
                 ),
-              ],
-            ),
-          ),
 
-          const SizedBox(height: 12),
+                const SizedBox(height: 24),
 
-          // ================= LIST SECTION =================
-          Expanded(
-            child: showListed
-                ? listedItems.isEmpty
-                    ? const Center(
-                        child: Text(
-                          "No items listed",
-                          style:
-                              TextStyle(color: Color(0xFFA0A0A0)),
-                        ),
-                      )
-                    : ListView.builder(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: listedItems.length,
-                        itemBuilder: (context, index) {
-                          final product = listedItems[index];
-
-                          return MyProductTile2(
-                            product: product,
-                            onDelete: () async {
-                              final confirm =
-                                  await showDialog<bool>(
-                                context: context,
-                                builder: (context) => AlertDialog(
-                                  title:
-                                      const Text("Delete Item"),
-                                  content: const Text(
-                                    "Are you sure you want to remove this item from the marketplace?",
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.pop(
-                                              context, false),
-                                      child:
-                                          const Text("Cancel"),
-                                    ),
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.pop(
-                                              context, true),
-                                      child:
-                                          const Text("Delete"),
-                                    ),
-                                  ],
-                                ),
-                              );
-
-                              if (confirm == true) {
-                                context
-                                    .read<Shop>()
-                                    .removeProduct(product);
-                              }
-                            },
-                          );
-                        },
-                      )
-                : favoriteItems.isEmpty
-                    ? const Center(
-                        child: Text(
-                          "No favorites yet",
-                          style:
-                              TextStyle(color: Color(0xFFA0A0A0)),
-                        ),
-                      )
-                    : ListView.builder(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: favoriteItems.length,
-                        itemBuilder: (context, index) {
-                          return MyProductTile2(
-                            product: favoriteItems[index],
-                          );
-                        },
+                // ================= STATS =================
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 40),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _statColumn(
+                        value: listedItems.length.toString(),
+                        label: "Listed Items",
                       ),
+                      _statColumn(
+                        value: "",
+                        label: "Rating",
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+                const Divider(color: Color(0xFF2A2A2A)),
+                const SizedBox(height: 12),
+
+                // ================= TABS =================
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 28),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _profileTab(
+                        icon: Icons.inventory_2_outlined,
+                        text: "Listed Items",
+                        active: showListed,
+                        onTap: () => setState(() => showListed = true),
+                      ),
+                      _profileTab(
+                        icon: Icons.favorite_border_outlined,
+                        text: "Favorites",
+                        active: !showListed,
+                        onTap: () => setState(() => showListed = false),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                // ================= LIST SECTION =================
+                Expanded(
+                  child: showListed
+                      ? listedItems.isEmpty
+                          ? const Center(
+                              child: Text(
+                                "No items listed",
+                                style: TextStyle(color: Color(0xFFA0A0A0)),
+                              ),
+                            )
+                          : ListView.builder(
+                              padding: const EdgeInsets.all(16),
+                              itemCount: listedItems.length,
+                              itemBuilder: (context, index) {
+                                final product = listedItems[index];
+
+                                return MyProductTile2(
+                                  product: product,
+                                  onDelete: () async {
+                                    final confirm =
+                                        await showDialog<bool>(
+                                      context: context,
+                                      builder: (context) => AlertDialog(
+                                        title:
+                                            const Text("Delete Item"),
+                                        content: const Text(
+                                          "Are you sure you want to remove this item?",
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.pop(
+                                                    context, false),
+                                            child:
+                                                const Text("Cancel"),
+                                          ),
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.pop(
+                                                    context, true),
+                                            child:
+                                                const Text("Delete"),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+
+                                    if (confirm == true) {
+                                      context
+                                          .read<Shop>()
+                                          .removeProduct(product);
+                                    }
+                                  },
+                                );
+                              },
+                            )
+                      : favoriteItems.isEmpty
+                          ? const Center(
+                              child: Text(
+                                "No favorites yet",
+                                style:
+                                    TextStyle(color: Color(0xFFA0A0A0)),
+                              ),
+                            )
+                          : ListView.builder(
+                              padding: const EdgeInsets.all(16),
+                              itemCount: favoriteItems.length,
+                              itemBuilder: (context, index) {
+                                return MyProductTile2(
+                                  product: favoriteItems[index],
+                                );
+                              },
+                            ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -277,9 +297,8 @@ class _ProfilePageState extends State<ProfilePage> {
         children: [
           Icon(
             icon,
-            color: active
-                ? const Color(0xFFC9A24D)
-                : const Color(0xFF6F6F6F),
+            color:
+                active ? const Color(0xFFC9A24D) : const Color(0xFF6F6F6F),
           ),
           const SizedBox(width: 8),
           Text(

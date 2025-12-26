@@ -1,3 +1,4 @@
+import 'package:agoraofolymus/components/auto_scroll_marketwidget.dart';
 import 'package:agoraofolymus/components/bottom_nav_bar.dart';
 import 'package:agoraofolymus/util/category_card.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
@@ -119,20 +120,14 @@ class _MarketplacePageState extends State<MarketplacePage> {
 
       const SliverToBoxAdapter(child: SizedBox(height: 25)),
 
-      // 🟨 CARD
+      // 🔥 AUTO SCROLL MARKET
       SliverToBoxAdapter(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 25),
-          child: Container(
-            height: 180,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              color: Colors.white,
-            ),
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: AutoScrollMarket(),
         ),
       ),
+
 
       const SliverToBoxAdapter(child: SizedBox(height: 25)),
 
