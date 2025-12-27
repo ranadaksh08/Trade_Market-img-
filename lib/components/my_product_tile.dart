@@ -88,7 +88,7 @@ class MyProductTile extends StatelessWidget {
                       ),
                     ),
 
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 0),
 
                     // 📝 SHORT DESCRIPTION
                     Text(
@@ -101,7 +101,7 @@ class MyProductTile extends StatelessWidget {
                       ),
                     ),
 
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 0),
 
                     // 💰 PRICE
                     Text(

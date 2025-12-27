@@ -283,7 +283,7 @@ class ProductDetailPage extends StatelessWidget {
                                 ),
                                 const SizedBox(width: 12),
                                 const Text(
-                                  'View Profile >',
+                                  'View Profile ',
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 16,

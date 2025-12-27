@@ -1,5 +1,6 @@
 import 'package:agoraofolymus/components/bottom_nav_bar.dart';
 import 'package:agoraofolymus/components/my_textfield_2.dart';
+import 'package:agoraofolymus/pages/marketplace_page.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
@@ -48,39 +49,48 @@ class _AdditemPageState extends State<AdditemPage> {
   }
 
   Future<void> submitItem() async {
-    if (nameController.text.isEmpty ||
-        priceController.text.isEmpty ||
-        shortDescController.text.isEmpty ||
-        longDescController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please fill all fields")),
-      );
-      return;
-    }
-
-    final userId = FirebaseAuth.instance.currentUser!.uid;
-
-    final product = Product(
-      id: '',
-      name: nameController.text.trim(),
-      price: double.parse(priceController.text),
-      shortDescription: shortDescController.text.trim(),
-      longDescription: longDescController.text.trim(),
-      imagePath: '',
-      rarity: selectedRarity,
-      category: selectedCategory,
-      ownerId: userId,
+  if (nameController.text.isEmpty ||
+      priceController.text.isEmpty ||
+      shortDescController.text.isEmpty ||
+      longDescController.text.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Please fill all fields")),
     );
+    return;
+  }
 
-      // 🔥 DEFINE shop ONCE
+  final user = FirebaseAuth.instance.currentUser;
+  if (user == null) return;
+
+  final product = Product(
+    id: '',
+    name: nameController.text.trim(),
+    price: double.parse(priceController.text),
+    shortDescription: shortDescController.text.trim(),
+    longDescription: longDescController.text.trim(),
+    imagePath: '',
+    rarity: selectedRarity,
+    category: selectedCategory,
+    ownerId: user.uid,
+  );
+
   final shop = context.read<Shop>();
 
   await shop.addProduct(product);
-  
-    
 
-    Navigator.pop(context);
-  }
+  // ✅ GUARANTEED SAFE NAVIGATION
+  if (!mounted) return;
+
+  Navigator.of(context).pushAndRemoveUntil(
+  MaterialPageRoute(
+    builder: (_) => const MarketplacePage(),
+  ),
+  (route) => false,
+);
+
+
+}
+
 
  @override
 Widget build(BuildContext context) {

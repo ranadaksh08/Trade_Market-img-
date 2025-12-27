@@ -18,6 +18,32 @@ class _ChatPageState extends State<ChatPage> {
   final TextEditingController messageController = TextEditingController();
   final String uid = FirebaseAuth.instance.currentUser!.uid;
 
+  Future<String> _getOtherUsername() async {
+    final chatDoc = await FirebaseFirestore.instance
+        .collection('chats')
+        .doc(widget.chatId)
+        .get();
+
+    final data = chatDoc.data();
+    if (data == null) return "Chat";
+
+    final List participants = data['participants'] ?? [];
+
+    final otherUserId =
+        participants.firstWhere((id) => id != uid, orElse: () => null);
+
+    if (otherUserId == null) return "Chat";
+
+    final userDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(otherUserId)
+        .get();
+
+    if (!userDoc.exists) return "Chat";
+
+    return userDoc['username'] ?? "Chat";
+  }
+
   Future<void> sendMessage() async {
     final text = messageController.text.trim();
     if (text.isEmpty) return;
@@ -36,6 +62,7 @@ class _ChatPageState extends State<ChatPage> {
     await chatRef.update({
       'lastMessage': text,
       'lastUpdated': FieldValue.serverTimestamp(),
+      'lastMessageSenderId': uid,
     });
   }
 
@@ -48,95 +75,137 @@ class _ChatPageState extends State<ChatPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF0E0F13),
+
       appBar: AppBar(
-        title: const Text("Chat"),
+        backgroundColor: const Color(0xFF0E0F13),
+        elevation: 0,
+        centerTitle: true,
+        title: FutureBuilder<String>(
+          future: _getOtherUsername(),
+          builder: (context, snapshot) {
+            return Text(
+              snapshot.data ?? "Chat",
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            );
+          },
+        ),
       ),
+
       body: Column(
         children: [
-          // 💬 Messages
+          // 💬 MESSAGES
           Expanded(
-            child: StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection('chats')
-                  .doc(widget.chatId)
-                  .collection('messages')
-                  .orderBy('timestamp')
-                  .snapshots(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0xFF0E0F13),
+                    Color(0xFF1A1C23),
+                  ],
+                ),
+              ),
+              child: StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('chats')
+                    .doc(widget.chatId)
+                    .collection('messages')
+                    .orderBy('timestamp')
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState ==
+                      ConnectionState.waiting) {
+                    return const Center(
+                      child: CircularProgressIndicator(
+                        color: Color(0xFFC9A24D),
+                      ),
+                    );
+                  }
 
-                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return const Center(
-                    child: Text(
-                      "No messages yet.\nStart the conversation 👋",
-                      textAlign: TextAlign.center,
-                    ),
-                  );
-                }
-
-                return ListView.builder(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  itemCount: snapshot.data!.docs.length,
-                  itemBuilder: (context, index) {
-                    final doc = snapshot.data!.docs[index];
-                    final data = doc.data() as Map<String, dynamic>;
-                    final bool isMe = data['senderId'] == uid;
-
-                    return Align(
-                      alignment: isMe
-                          ? Alignment.centerRight
-                          : Alignment.centerLeft,
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(vertical: 4),
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 10, horizontal: 14),
-                        constraints: BoxConstraints(
-                          maxWidth:
-                              MediaQuery.of(context).size.width * 0.75,
-                        ),
-                        decoration: BoxDecoration(
-                          color:
-                              isMe ? Colors.blueAccent : Colors.grey[300],
-                          borderRadius: BorderRadius.only(
-                            topLeft: const Radius.circular(12),
-                            topRight: const Radius.circular(12),
-                            bottomLeft: isMe
-                                ? const Radius.circular(12)
-                                : const Radius.circular(0),
-                            bottomRight: isMe
-                                ? const Radius.circular(0)
-                                : const Radius.circular(12),
-                          ),
-                        ),
-                        child: Text(
-                          data['text'],
-                          style: TextStyle(
-                            color: isMe
-                                ? Colors.white
-                                : Colors.black87,
-                            fontSize: 15,
-                          ),
+                  if (!snapshot.hasData ||
+                      snapshot.data!.docs.isEmpty) {
+                    return const Center(
+                      child: Text(
+                        "Start the conversation 👋",
+                        style: TextStyle(
+                          color: Color(0xFFA0A0A0),
                         ),
                       ),
                     );
-                  },
-                );
-              },
+                  }
+
+                  return ListView.builder(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 12),
+                    itemCount: snapshot.data!.docs.length,
+                    itemBuilder: (context, index) {
+                      final data = snapshot.data!.docs[index].data()
+                          as Map<String, dynamic>;
+
+                      final isMe = data['senderId'] == uid;
+
+                      return Align(
+                        alignment: isMe
+                            ? Alignment.centerRight
+                            : Alignment.centerLeft,
+                        child: Container(
+                          margin:
+                              const EdgeInsets.symmetric(vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 10, horizontal: 14),
+                          constraints: BoxConstraints(
+                            maxWidth:
+                                MediaQuery.of(context).size.width *
+                                    0.75,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isMe
+                                ? const Color(0xFFC9A24D)
+                                : const Color(0xFF1A1C23),
+                            borderRadius: BorderRadius.only(
+                              topLeft:
+                                  const Radius.circular(14),
+                              topRight:
+                                  const Radius.circular(14),
+                              bottomLeft: isMe
+                                  ? const Radius.circular(14)
+                                  : const Radius.circular(4),
+                              bottomRight: isMe
+                                  ? const Radius.circular(4)
+                                  : const Radius.circular(14),
+                            ),
+                          ),
+                          child: Text(
+                            data['text'],
+                            style: TextStyle(
+                              color:
+                                  isMe ? Colors.black : Colors.white,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
             ),
           ),
 
-          // ✍️ Input Bar
+          // ✍️ INPUT BAR
           SafeArea(
             child: Container(
               padding:
-                  const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.grey[200],
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: const BoxDecoration(
+                color: Color(0xFF1A1C23),
                 border: Border(
-                  top: BorderSide(color: Colors.grey.shade300),
+                  top: BorderSide(color: Color(0xFF2A2D36)),
                 ),
               ),
               child: Row(
@@ -144,15 +213,18 @@ class _ChatPageState extends State<ChatPage> {
                   Expanded(
                     child: TextField(
                       controller: messageController,
+                      style: const TextStyle(color: Colors.white),
                       decoration: const InputDecoration(
-                        hintText: "Type a message",
+                        hintText: "Type a message...",
+                        hintStyle:
+                            TextStyle(color: Color(0xFFA0A0A0)),
                         border: InputBorder.none,
                       ),
                     ),
                   ),
                   IconButton(
                     icon: const Icon(Icons.send),
-                    color: Colors.blueAccent,
+                    color: const Color(0xFFC9A24D),
                     onPressed: sendMessage,
                   ),
                 ],
