@@ -51,7 +51,7 @@ class MyProductTile extends StatelessWidget {
             Expanded(
               child: ClipRRect(
                 borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(16),
+                  top: Radius.circular(0),
                 ),
                 child: hasImage
                     ? FadeInImage.assetNetwork(

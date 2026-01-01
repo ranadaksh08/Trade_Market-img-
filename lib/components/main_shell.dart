@@ -8,18 +8,9 @@ import '../pages/auction_page.dart';
 import '../pages/profile_page.dart';
 
 class MainShell extends StatefulWidget {
-  /// Which tab should be opened first
-  /// 0 = Marketplace
-  /// 1 = Add Item
-  /// 2 = Inbox
-  /// 3 = Auction
-  /// 4 = Profile
   final int initialIndex;
 
-  const MainShell({
-    super.key,
-    this.initialIndex = 0,
-  });
+  const MainShell({super.key, this.initialIndex = 0});
 
   @override
   State<MainShell> createState() => _MainShellState();
@@ -45,13 +36,32 @@ class _MainShellState extends State<MainShell> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _pages,
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 1000),
+        switchInCurve: Curves.easeOutExpo,
+        switchOutCurve: Curves.easeInExpo,
+
+        transitionBuilder: (child, animation) {
+          return FadeTransition(
+            opacity: animation,
+            child: SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0, 0.025),
+                end: Offset.zero,
+              ).animate(animation),
+              child: child,
+            ),
+          );
+        },
+        child: KeyedSubtree(
+          key: ValueKey(_currentIndex),
+          child: _pages[_currentIndex],
+        ),
       ),
+
       bottomNavigationBar: CurvedNavigationBar(
         index: _currentIndex,
-        backgroundColor: Color(0xFF1A1C23),
+        backgroundColor: const Color(0xFF1A1C23),
         color: const Color(0xFFC9A24D),
         animationDuration: const Duration(milliseconds: 350),
         items: const [
@@ -63,9 +73,7 @@ class _MainShellState extends State<MainShell> {
         ],
         onTap: (index) {
           if (index == _currentIndex) return;
-          setState(() {
-            _currentIndex = index;
-          });
+          setState(() => _currentIndex = index);
         },
       ),
     );

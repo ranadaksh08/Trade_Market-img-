@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
+import 'package:agoraofolymus/components/soft_page_motion.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -191,178 +192,180 @@ class _AdditemPageState extends State<AdditemPage> {
         title: const Text("Add Item", style: TextStyle(color: Colors.white70)),
         backgroundColor: const Color(0xFF0E0F13),
       ),
-      body: Stack(
-        children: [
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Color(0xFF0E0F13), Color(0xFF1A1C23)],
+      body: SoftPageMotion(
+        child: Stack(
+          children: [
+            Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Color(0xFF0E0F13), Color(0xFF1A1C23)],
+                ),
               ),
             ),
-          ),
-          SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(vertical: 20),
-              child: Column(
-                children: [
-                  const SizedBox(height: 10),
-
-                  // IMAGE PICKER
-                  GestureDetector(
-                    onTap: _isSubmitting ? null : pickImages,
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 25),
-                      height: 180,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1A1C23),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.white24),
-                      ),
-                      child: _selectedImages.isEmpty
-                          ? const Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.add_photo_alternate,
-                                      color: Colors.white54, size: 40),
-                                  SizedBox(height: 8),
-                                  Text(
-                                    "Tap to add images",
-                                    style:
-                                        TextStyle(color: Colors.white70),
-                                  ),
-                                ],
-                              ),
-                            )
-                          : ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: _selectedImages.length,
-                              itemBuilder: (context, index) {
-                                return Padding(
-                                  padding: const EdgeInsets.all(8),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(12),
-                                    child: Image.file(
-                                      _selectedImages[index],
-                                      width: 140,
-                                      fit: BoxFit.cover,
+            SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 10),
+        
+                    // IMAGE PICKER
+                    GestureDetector(
+                      onTap: _isSubmitting ? null : pickImages,
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 25),
+                        height: 180,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1A1C23),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.white24),
+                        ),
+                        child: _selectedImages.isEmpty
+                            ? const Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.add_photo_alternate,
+                                        color: Colors.white54, size: 40),
+                                    SizedBox(height: 8),
+                                    Text(
+                                      "Tap to add images",
+                                      style:
+                                          TextStyle(color: Colors.white70),
                                     ),
-                                  ),
-                                );
-                              },
-                            ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // TEXT FIELDS
-                  MyTextfield2(
-                    controller: nameController,
-                    hintText: "Item Name",
-                    obscureText: false,
-                  ),
-                  const SizedBox(height: 12),
-                  MyTextfield2(
-                    controller: shortDescController,
-                    hintText: "Short Description",
-                    obscureText: false,
-                  ),
-                  const SizedBox(height: 12),
-                  MyTextfield2(
-                    controller: longDescController,
-                    hintText: "Long Description",
-                    minLines: 3,
-                    maxLines: 6,
-                    obscureText: false,
-                  ),
-                  const SizedBox(height: 12),
-                  MyTextfield2(
-                    controller: priceController,
-                    hintText: "Price",
-                    obscureText: false,
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // CATEGORY
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 25),
-                    child: DropdownButtonFormField<String>(
-                      dropdownColor: const Color(0xFF1A1C23),
-                      value: selectedCategory,
-                      items: categories
-                          .map((c) => DropdownMenuItem(
-                                value: c,
-                                child: Text(c,
-                                    style: const TextStyle(
-                                        color: Colors.white)),
-                              ))
-                          .toList(),
-                      onChanged: (value) =>
-                          setState(() => selectedCategory = value!),
-                      decoration: const InputDecoration(
-                        labelText: "Category",
-                        labelStyle: TextStyle(color: Colors.white70),
+                                  ],
+                                ),
+                              )
+                            : ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: _selectedImages.length,
+                                itemBuilder: (context, index) {
+                                  return Padding(
+                                    padding: const EdgeInsets.all(8),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: Image.file(
+                                        _selectedImages[index],
+                                        width: 140,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
                       ),
                     ),
-                  ),
-
-                  const SizedBox(height: 15),
-
-                  // RARITY
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 25),
-                    child: DropdownButtonFormField<String>(
-                      dropdownColor: const Color(0xFF1A1C23),
-                      value: selectedRarity,
-                      items: rarities
-                          .map((r) => DropdownMenuItem(
-                                value: r,
-                                child: Text(r,
-                                    style: const TextStyle(
-                                        color: Colors.white)),
-                              ))
-                          .toList(),
-                      onChanged: (value) =>
-                          setState(() => selectedRarity = value!),
-                      decoration: const InputDecoration(
-                        labelText: "Rarity",
-                        labelStyle: TextStyle(color: Colors.white70),
+        
+                    const SizedBox(height: 20),
+        
+                    // TEXT FIELDS
+                    MyTextfield2(
+                      controller: nameController,
+                      hintText: "Item Name",
+                      obscureText: false,
+                    ),
+                    const SizedBox(height: 12),
+                    MyTextfield2(
+                      controller: shortDescController,
+                      hintText: "Short Description",
+                      obscureText: false,
+                    ),
+                    const SizedBox(height: 12),
+                    MyTextfield2(
+                      controller: longDescController,
+                      hintText: "Long Description",
+                      minLines: 3,
+                      maxLines: 6,
+                      obscureText: false,
+                    ),
+                    const SizedBox(height: 12),
+                    MyTextfield2(
+                      controller: priceController,
+                      hintText: "Price",
+                      obscureText: false,
+                    ),
+        
+                    const SizedBox(height: 20),
+        
+                    // CATEGORY
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 25),
+                      child: DropdownButtonFormField<String>(
+                        dropdownColor: const Color(0xFF1A1C23),
+                        value: selectedCategory,
+                        items: categories
+                            .map((c) => DropdownMenuItem(
+                                  value: c,
+                                  child: Text(c,
+                                      style: const TextStyle(
+                                          color: Colors.white)),
+                                ))
+                            .toList(),
+                        onChanged: (value) =>
+                            setState(() => selectedCategory = value!),
+                        decoration: const InputDecoration(
+                          labelText: "Category",
+                          labelStyle: TextStyle(color: Colors.white70),
+                        ),
                       ),
                     ),
-                  ),
-
-                  const SizedBox(height: 30),
-
-                  ElevatedButton(
-                    onPressed: _isSubmitting ? null : submitItem,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 14, horizontal: 40),
-                      backgroundColor: const Color(0xFFC9A24D),
+        
+                    const SizedBox(height: 15),
+        
+                    // RARITY
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 25),
+                      child: DropdownButtonFormField<String>(
+                        dropdownColor: const Color(0xFF1A1C23),
+                        value: selectedRarity,
+                        items: rarities
+                            .map((r) => DropdownMenuItem(
+                                  value: r,
+                                  child: Text(r,
+                                      style: const TextStyle(
+                                          color: Colors.white)),
+                                ))
+                            .toList(),
+                        onChanged: (value) =>
+                            setState(() => selectedRarity = value!),
+                        decoration: const InputDecoration(
+                          labelText: "Rarity",
+                          labelStyle: TextStyle(color: Colors.white70),
+                        ),
+                      ),
                     ),
-                    child: _isSubmitting
-                        ? const CircularProgressIndicator(
-                            color: Colors.black,
-                          )
-                        : const Text(
-                            "Add Item",
-                            style: TextStyle(
+        
+                    const SizedBox(height: 30),
+        
+                    ElevatedButton(
+                      onPressed: _isSubmitting ? null : submitItem,
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 14, horizontal: 40),
+                        backgroundColor: const Color(0xFFC9A24D),
+                      ),
+                      child: _isSubmitting
+                          ? const CircularProgressIndicator(
                               color: Colors.black,
-                              fontSize: 16,
+                            )
+                          : const Text(
+                              "Add Item",
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 16,
+                              ),
                             ),
-                          ),
-                  ),
-
-                  const SizedBox(height: 30),
-                ],
+                    ),
+        
+                    const SizedBox(height: 30),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
