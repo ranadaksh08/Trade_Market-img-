@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1059268687688",
+    "project_id": "trademarketplaceimg",
+    "storage_bucket": "trademarketplaceimg.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1059268687688:android:46a449f8cbd871c956e57d",
+        "android_client_info": {
+          "package_name": "com.example.agoraofolymus"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA3pXaqokhxTskeuHieVjWWxNt2hrvb_bs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
