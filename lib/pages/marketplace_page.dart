@@ -140,6 +140,26 @@ class _MarketplacePageState extends State<MarketplacePage> {
                   ),
         
                   const SliverToBoxAdapter(child: SizedBox(height: 25)),
+
+                  // 📂 HORIZONTAL CATEGORIES
+                    SliverToBoxAdapter(
+                      child: SizedBox(
+                        height: 50, 
+                        child: ListView(
+                          scrollDirection: Axis.horizontal,
+                          padding: const EdgeInsets.symmetric(horizontal: 10), 
+                          children: [
+                            CategoryCard(category: 'Armor', icon: Icons.shield),
+                            CategoryCard(category: 'Weapons', icon: Icons.gavel),
+                            CategoryCard(category: 'Potions', icon: Icons.biotech),
+                            CategoryCard(category: 'Artifact', icon: Icons.auto_awesome),
+                            
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    const SliverToBoxAdapter(child: SizedBox(height: 25)),
         
                   // 🔍 SEARCH BAR
                   SliverToBoxAdapter(

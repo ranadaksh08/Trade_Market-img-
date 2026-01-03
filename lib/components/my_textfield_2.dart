@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class MyTextfield2 extends StatelessWidget {
   final TextEditingController controller;
@@ -8,6 +9,7 @@ class MyTextfield2 extends StatelessWidget {
   final int maxLines;
   final IconData? icon;
   final TextInputType keyboardType;
+  final List<TextInputFormatter>? inputFormatters; // 1. Added this
 
   const MyTextfield2({
     super.key,
@@ -18,6 +20,7 @@ class MyTextfield2 extends StatelessWidget {
     this.maxLines = 1,
     this.icon,
     this.keyboardType = TextInputType.text,
+    this.inputFormatters, // 2. Added this
   });
 
   @override
